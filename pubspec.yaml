@@ -1,0 +1,29 @@
+name: sample
+description: Examples of using Torus CustomAuth Flutter SDK.
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  customauth_flutter:
+    git:
+      url: git://github.com/torusresearch/customauth-flutter-sdk
+      ref: master
+
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^1.0.0
+
+flutter:
+  uses-material-design: true
