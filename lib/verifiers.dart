@@ -54,6 +54,13 @@ class AggregatedVerifier {
       required this.subVerifiers});
 }
 
+class NativeVerifier {
+  final String verifierId;
+  final String clientId;
+
+  NativeVerifier({required this.verifierId, required this.clientId});
+}
+
 final aggregatedVerifier = AggregatedVerifier(
     type: TorusAggregateVerifierType.single_id_verifier,
     verifierId: "chai-google-aggregate-test",
@@ -64,3 +71,8 @@ final aggregatedVerifier = AggregatedVerifier(
           clientId:
               '884454361223-nnlp6vtt0me9jdsm2ptg4d1dh8i0tu74.apps.googleusercontent.com')
     ]);
+
+final nativeVerifier = NativeVerifier(
+  verifierId: 'torus-direct-google-jwt',
+  clientId: '391189746290-khl7c0p6d0d9sv51f2kg7jrqph7o0c30.apps.googleusercontent.com'
+);

@@ -12,12 +12,13 @@ dependencies:
   flutter:
     sdk: flutter
 
+  cupertino_icons: ^1.0.2
+  google_sign_in: ^5.2.1
+
   customauth_flutter:
     git:
       url: git://github.com/torusresearch/customauth-flutter-sdk
       ref: master
-
-  cupertino_icons: ^1.0.2
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,8 @@
+import 'dart:io' show Platform;
+
 import 'package:customauth_flutter/customauth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'verifiers.dart';
 
@@ -36,6 +39,8 @@ class MyHomePageState extends State<MyHomePage> {
   bool isLoading = true;
   String result = 'Please login to see results.';
 
+  GoogleSignIn? googleSignIn;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +54,12 @@ class MyHomePageState extends State<MyHomePage> {
           browserRedirectUri:
               Uri.parse('https://scripts.toruswallet.io/redirect.html'),
           redirectUri: Uri.parse('torus://org.torusresearch.sample/redirect'));
+      if (Platform.isAndroid) {
+        googleSignIn = GoogleSignIn(
+          clientId: nativeVerifier.clientId,
+          scopes: ['openid', 'email', 'profile'],
+        );
+      }
     } catch (err) {
       result = 'Error: ' + err.toString();
     } finally {
@@ -59,17 +70,17 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> onLoginWithSingleVerifier() async {
-    final selectedVerifier = verifier;
-    if (selectedVerifier == null || isLoading) return;
+    final verifier = this.verifier;
+    if (verifier == null || isLoading) return;
 
     setState(() {
       isLoading = true;
     });
     try {
       final credentials = await CustomAuth.triggerLogin(
-          typeOfLogin: selectedVerifier.typeOfLogin,
-          verifier: selectedVerifier.verifierId,
-          clientId: selectedVerifier.clientId);
+          typeOfLogin: verifier.typeOfLogin,
+          verifier: verifier.verifierId,
+          clientId: verifier.clientId);
       setState(() {
         result = 'Public address: ' + credentials.publicAddress;
         isLoading = false;
@@ -94,6 +105,39 @@ class MyHomePageState extends State<MyHomePage> {
         verifierIdentifier: aggregatedVerifier.verifierId,
         subVerifierDetailsArray: aggregatedVerifier.subVerifiers,
       );
+      setState(() {
+        result = 'Public address: ' + credentials.publicAddress;
+        isLoading = false;
+      });
+    } catch (err) {
+      setState(() {
+        result = 'Error: ' + err.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> onLoginWithGoogle() async {
+    final googleSignIn = this.googleSignIn;
+    if (googleSignIn == null) return;
+
+    if (isLoading) return;
+
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final googleAccount = await googleSignIn.signIn();
+      if (googleAccount == null) {
+        throw Exception("Couldn't sign in with Google");
+      }
+      final googleAuth = await googleAccount.authentication;
+      final idToken = googleAuth.idToken;
+      if (idToken == null) throw Exception("Couldn't get ID token from Google");
+      final credentials = await CustomAuth.getTorusKey(
+          verifier: nativeVerifier.verifierId,
+          verifierId: googleAccount.email,
+          idToken: idToken);
       setState(() {
         result = 'Public address: ' + credentials.publicAddress;
         isLoading = false;
@@ -156,7 +200,7 @@ class MyHomePageState extends State<MyHomePage> {
                 'This example demonstrates native Google login using getTorusKey. You can implement any sort of login similarly using either getTorusKey or getAggregateTorusKey. See docs.tor.us for details.'),
             TextButton(
               child: const Text('Login'),
-              onPressed: () {},
+              onPressed: onLoginWithGoogle,
             ),
             Container(
                 margin: const EdgeInsets.only(top: 20, bottom: 10),
